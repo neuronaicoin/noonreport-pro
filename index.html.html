@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Noon Report Pro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --navy:#0a2540; --navy2:#0d2c4d; --deep:#061a30; --field:#0f3355;
+    --line:#1c476f; --gold:#fbbf24; --gold2:#f59e0b; --gold-lt:#fcd34d;
+    --ice:#eaf2f8; --grey:#8fa3b8; --faint:#5f7793;
+    --ok:#34d399; --warn-r:#f87171;
+  }
+  html,body{height:100%}
+  body{background:var(--navy);color:var(--ice);font-family:'Inter',system-ui,sans-serif;
+    font-size:14px;line-height:1.5;overflow-x:hidden}
+  .app{max-width:640px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--navy)}
+
+  /* header */
+  header{background:linear-gradient(180deg,var(--deep),var(--navy));padding:14px 16px 12px;
+    border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  .htop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{display:flex;align-items:center;gap:9px}
+  .brand .dot{width:26px;height:26px;border-radius:7px;background:linear-gradient(145deg,var(--gold-lt),var(--gold2));
+    display:grid;place-items:center;font-family:'Archivo';font-weight:900;color:var(--navy);font-size:14px;
+    box-shadow:0 2px 8px rgba(251,191,36,.3)}
+  .brand h1{font-family:'Archivo',sans-serif;font-weight:800;font-size:16px;letter-spacing:.01em}
+  .brand h1 span{color:var(--gold)}
+  .vname{font-size:11px;color:var(--grey);font-weight:600;text-align:right;max-width:130px;line-height:1.3}
+
+  /* tabs */
+  .tabs{display:flex;gap:2px;margin-top:12px;background:var(--deep);padding:3px;border-radius:11px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:1;min-width:max-content;padding:8px 12px;border:none;background:transparent;color:var(--grey);
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:12px;letter-spacing:.02em;border-radius:8px;
+    cursor:pointer;transition:.15s;white-space:nowrap}
+  .tab.on{background:var(--gold);color:var(--navy)}
+
+  /* content */
+  main{flex:1;padding:16px;padding-bottom:90px}
+  .panel{display:none;animation:fade .2s}
+  .panel.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:14px}
+  .card-t{font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  .card-t .ic{font-size:14px}
+
+  /* fields */
+  .fld{margin-bottom:11px}
+  .fld:last-child{margin-bottom:0}
+  .fld label{display:block;font-size:11px;font-weight:600;color:var(--grey);margin-bottom:5px;
+    letter-spacing:.02em}
+  .fld input,.fld select{width:100%;background:var(--field);border:1px solid var(--line);border-radius:9px;
+    padding:11px 12px;color:var(--ice);font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;
+    outline:none;transition:.15s;-webkit-appearance:none;appearance:none}
+  .fld input:focus,.fld select:focus{border-color:var(--gold);background:#123a5f}
+  .fld select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238fa3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 13px center;padding-right:32px;font-family:'Inter',sans-serif}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+  /* computed output */
+  .out{background:linear-gradient(135deg,var(--field),var(--navy2));border:1px solid var(--line);
+    border-radius:11px;padding:12px;margin-top:4px}
+  .out-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;
+    border-bottom:1px solid rgba(28,71,111,.5)}
+  .out-row:last-child{border-bottom:none}
+  .out-row .k{font-size:12px;color:var(--grey);font-weight:500}
+  .out-row .v{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:15px;color:var(--gold-lt)}
+  .out-row .v small{font-size:10px;color:var(--faint);margin-left:3px;font-weight:500}
+  .out-row.big .v{font-size:18px;color:var(--gold)}
+
+  .hint{font-size:11px;color:var(--faint);line-height:1.5;margin-top:8px}
+  .hint b{color:var(--gold)}
+
+  /* empty / info */
+  .info-note{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.22);border-radius:10px;
+    padding:10px 12px;font-size:12px;line-height:1.55;color:var(--ice);margin-bottom:14px}
+  .info-note b{color:var(--gold)}
+
+  /* bottom bar */
+  .btmbar{position:fixed;bottom:0;left:0;right:0;max-width:640px;margin:0 auto;
+    background:linear-gradient(180deg,transparent,var(--deep) 22%);padding:14px 16px 16px;
+    display:flex;gap:10px;z-index:20}
+  .btn{flex:1;padding:13px;border:none;border-radius:11px;font-family:'Archivo',sans-serif;font-weight:800;
+    font-size:13px;letter-spacing:.03em;cursor:pointer;transition:.15s}
+  .btn-gold{background:var(--gold);color:var(--navy)}
+  .btn-gold:active{background:var(--gold2)}
+  .btn-ghost{background:var(--field);color:var(--ice);border:1px solid var(--line)}
+  .btn-ghost:active{background:var(--navy2)}
+
+  /* dynamic rows (consumption) */
+  .con-row{display:grid;grid-template-columns:1fr 90px 30px;gap:8px;align-items:center;margin-bottom:8px}
+  .con-row .nm{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 10px;
+    color:var(--ice);font-size:12px;font-weight:600;outline:none;font-family:'Inter',sans-serif}
+  .con-row .val{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 8px;
+    color:var(--ice);font-family:'JetBrains Mono',monospace;font-size:13px;text-align:right;outline:none}
+  .con-row .val:focus,.con-row .nm:focus{border-color:var(--gold)}
+  .con-row .del{background:transparent;border:none;color:var(--faint);font-size:18px;cursor:pointer;padding:0}
+  .con-row .del:active{color:var(--warn-r)}
+  .add-btn{width:100%;background:transparent;border:1px dashed var(--line);border-radius:9px;padding:10px;
+    color:var(--gold);font-family:'Archivo',sans-serif;font-weight:700;font-size:12px;cursor:pointer;margin-top:4px}
+  .add-btn:active{background:rgba(251,191,36,.06)}
+
+  .save-flash{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--ok);color:var(--deep);
+    padding:9px 18px;border-radius:20px;font-weight:700;font-size:12px;z-index:50;opacity:0;transition:.25s;
+    pointer-events:none;font-family:'Archivo'}
+  .save-flash.show{opacity:1}
+
+  /* fuel types */
+  .ftype{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:9px}
+  .ftype-head{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .ftype-head input.fname{flex:1;background:var(--navy2);border:1px solid var(--line);border-radius:7px;
+    padding:8px 10px;color:var(--gold-lt);font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;outline:none}
+  .ftype-head input.fname:focus{border-color:var(--gold)}
+  .ftype-head .del{background:transparent;border:none;color:var(--faint);font-size:18px;cursor:pointer;padding:0 4px}
+  .ftype-head .del:active{color:var(--warn-r)}
+  .ftype-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mini label{display:block;font-size:10px;color:var(--grey);margin-bottom:3px;font-weight:600}
+  .mini input{width:100%;background:var(--navy2);border:1px solid var(--line);border-radius:7px;padding:8px 9px;
+    color:var(--ice);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none}
+  .mini input:focus{border-color:var(--gold)}
+
+  /* consumer card */
+  .consumer{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:9px}
+  .consumer-head{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .consumer-head input.cname{flex:1;background:var(--navy2);border:1px solid var(--line);border-radius:7px;
+    padding:8px 10px;color:var(--ice);font-weight:600;font-size:13px;outline:none;font-family:'Inter',sans-serif}
+  .consumer-head input.cname:focus{border-color:var(--gold)}
+  .consumer-head .del{background:transparent;border:none;color:var(--faint);font-size:18px;cursor:pointer;padding:0 4px}
+  .consumer-head .del:active{color:var(--warn-r)}
+  .consumer-ctrl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .consumer-ctrl select{width:100%;background:var(--navy2);border:1px solid var(--line);border-radius:7px;
+    padding:8px 9px;color:var(--ice);font-size:12px;outline:none;-webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8'%3E%3Cpath fill='%238fa3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 9px center;padding-right:26px}
+  .consumer-ctrl select:focus{border-color:var(--gold)}
+  .consumer-in{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .consumer-in.one{grid-template-columns:1fr}
+  .consumer-mt{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--gold-lt);
+    font-size:14px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(28,71,111,.5)}
+  .consumer-mt small{color:var(--faint);font-size:10px;font-weight:500}
+  .consumer-mt .cm-lbl{font-family:'Inter',sans-serif;font-size:11px;color:var(--grey);font-weight:500;float:left}
+
+  /* collapsible */
+  .card-t.collapsible{cursor:pointer;user-select:none;justify-content:flex-start}
+  .card-t .chev{margin-left:auto;color:var(--grey);font-size:12px;transition:transform .2s}
+  .card-t .chev.open{transform:rotate(90deg)}
+
+  /* aux picker */
+  .aux-picker{display:flex;gap:7px;flex-wrap:wrap}
+  .aux-chip{display:flex;align-items:center;gap:6px;background:var(--field);border:1px solid var(--line);
+    border-radius:9px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;color:var(--grey);
+    transition:.15s;font-family:'Archivo',sans-serif}
+  .aux-chip.on{background:rgba(251,191,36,.14);border-color:var(--gold);color:var(--gold-lt)}
+  .aux-chip input{display:none}
+  .aux-chip .box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--faint);display:grid;place-items:center;font-size:11px}
+  .aux-chip.on .box{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+
+  /* flowmeter temp/density inline */
+  .fm-td{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .fm-td3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+  .fm-td .mini label{font-size:10px}
+  .fm-td3 .mini label{font-size:10px}
+
+  /* op-mode (idle/working/ballast) */
+  .opmode-row{display:flex;gap:6px;margin-bottom:8px}
+  .opmode-chip{flex:1;padding:7px 4px;border:1px solid var(--line);background:var(--navy2);color:var(--grey);
+    border-radius:7px;font-family:'Archivo',sans-serif;font-weight:700;font-size:11px;cursor:pointer;transition:.15s}
+  .opmode-chip.on{background:rgba(52,211,153,.16);border-color:var(--ok);color:var(--ok)}
+
+  /* report */
+  .sec-picker{display:flex;gap:7px;flex-wrap:wrap}
+  .sec-chip{display:flex;align-items:center;gap:6px;background:var(--field);border:1px solid var(--line);
+    border-radius:9px;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;color:var(--grey);
+    font-family:'Archivo',sans-serif;transition:.15s}
+  .sec-chip.on{background:rgba(251,191,36,.14);border-color:var(--gold);color:var(--gold-lt)}
+  .sec-chip input{accent-color:var(--gold)}
+  .rep-pre{background:var(--deep);border:1px solid var(--line);border-radius:10px;padding:14px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;color:var(--ice);
+    white-space:pre-wrap;word-break:break-word;max-height:420px;overflow-y:auto;margin:0}
+  .log-item{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:11px 13px;
+    margin-bottom:8px;cursor:pointer;transition:.15s}
+  .log-item:active{background:var(--navy2)}
+  .log-item .li-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .log-item .li-ev{font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;color:var(--gold-lt)}
+  .log-item .li-dt{font-size:11px;color:var(--grey);font-family:'JetBrains Mono',monospace}
+  .log-item .li-sum{font-size:11px;color:var(--faint);margin-top:4px;font-family:'JetBrains Mono',monospace}
+  .log-item .li-del{background:transparent;border:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 2px}
+  .log-item .li-del:active{color:var(--warn-r)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="htop">
+      <div class="brand">
+        <div class="dot">N</div>
+        <h1>NOON<span>REPORT</span></h1>
+      </div>
+      <div class="vname" id="vname">No vessel set</div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-tab="me">Engine</button>
+      <button class="tab" data-tab="fuel">Bunker</button>
+      <button class="tab" data-tab="oil">Lub Oil</button>
+      <button class="tab" data-tab="water">Water</button>
+      <button class="tab" data-tab="report">Report</button>
+      <button class="tab" data-tab="vessel">Vessel</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ENGINE -->
+    <section class="panel on" id="p-me">
+      <div class="info-note" id="me-info">
+        Enter the counters and running hours. Average RPM, slip and engine power are calculated automatically.
+      </div>
+      <div class="card">
+        <div class="card-t"><span class="ic">📅</span> Report info</div>
+        <div class="row2">
+          <div class="fld"><label>Date</label><input type="date" id="r-date"></div>
+          <div class="fld"><label>Time (LT)</label><input type="time" id="r-time"></div>
+        </div>
+        <div class="fld"><label>Event</label>
+          <select id="r-event">
+            <option>Noon</option>
+            <option>COSP</option>
+            <option>EOSP</option>
+            <option>Pilot Onboard</option>
+            <option>First Line</option>
+            <option>Last Line</option>
+            <option>FWE</option>
+            <option>Start Drifting</option>
+            <option>End Drifting</option>
+            <option>Drop Anchor</option>
+            <option>Anchor Aweigh</option>
+            <option>In Port</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">⚙️</span> Main engine counter</div>
+        <div class="row2">
+          <div class="fld"><label>Previous counter (rev)</label><input type="text" inputmode="decimal" id="me-prev" placeholder="0"></div>
+          <div class="fld"><label>Present counter (rev)</label><input type="text" inputmode="decimal" id="me-now" placeholder="0"></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label>Running hours (h)</label><input type="text" inputmode="decimal" id="me-hrs" placeholder="24"></div>
+          <div class="fld"><label>Vessel distance (NM)</label><input type="text" inputmode="decimal" id="me-dist" placeholder="0"></div>
+        </div>
+        <div class="out" id="me-out"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">🔥</span> Engine power (propeller law)</div>
+        <div class="out" id="pow-out"></div>
+        <div class="hint" id="pow-hint"></div>
+      </div>
+    </section>
+
+    <!-- FUEL -->
+    <section class="panel" id="p-fuel">
+      <div class="info-note">
+        Enter each running unit's consumption. Flowmeter units auto-convert litres → MT using
+        temperature &amp; density. ROB updates per fuel type and carries forward each day.
+      </div>
+
+      <div class="card">
+        <div class="card-t collapsible" id="bunker-head"><span class="ic">🛢️</span> Bunker Report <span class="chev" id="bunker-chev">▸</span></div>
+        <div id="bunker-body" style="display:none">
+          <div class="hint" style="margin-top:0;margin-bottom:10px">Open this only when you <b>bunker</b> or need to set/correct ROB. Not needed every day.</div>
+          <div id="ftype-list"></div>
+          <button class="add-btn" id="add-ftype">+ Add fuel type</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">🔌</span> Auxiliary engines running</div>
+        <div class="aux-picker" id="aux-picker"></div>
+        <div class="hint">Tick the A/E units that ran. They appear below as consumers.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">⛽</span> Consumption</div>
+        <div id="con-list"></div>
+        <button class="add-btn" id="add-con">+ Add other consumer</button>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">📊</span> ROB by fuel type</div>
+        <div id="rob-out"></div>
+      </div>
+    </section>
+    <!-- OIL -->
+    <section class="panel" id="p-oil">
+      <div class="info-note">
+        Track lube oil by <b>flowmeter</b> (litres → auto kg/MT) or <b>manual</b>. Cylinder oil
+        <b>feed rate (g/kWh)</b> is calculated automatically from the M/E power on the Engine tab.
+      </div>
+
+      <div class="card">
+        <div class="card-t collapsible" id="oiltype-head"><span class="ic">🛢️</span> Oil Types &amp; ROB <span class="chev" id="oiltype-chev">▸</span></div>
+        <div id="oiltype-body" style="display:none">
+          <div class="hint" style="margin-top:0;margin-bottom:10px">Open only to set/correct oil types, density or ROB. Not needed every day. Prev ROB carries forward automatically.</div>
+          <div id="otype-list"></div>
+          <button class="add-btn" id="add-otype">+ Add oil type</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">💧</span> Oil consumers</div>
+        <div id="ocon-list"></div>
+        <button class="add-btn" id="add-ocon">+ Add oil consumer</button>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">📊</span> Oil ROB &amp; feed rate</div>
+        <div id="orob-out"></div>
+      </div>
+    </section>
+    <section class="panel" id="p-water">
+      <div class="info-note">
+        Track <b>fresh water production</b> (FWG flowmeter or manual) and current <b>tank levels</b>.
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">💧</span> Fresh water generator</div>
+        <div id="fwg-list"></div>
+        <button class="add-btn" id="add-fwg">+ Add generator</button>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">🛟</span> Fresh water tanks</div>
+        <div id="fwtank-list"></div>
+        <button class="add-btn" id="add-fwtank">+ Add tank</button>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">📊</span> Fresh water summary</div>
+        <div id="fw-out"></div>
+      </div>
+    </section>
+    <section class="panel" id="p-report">
+      <div class="info-note">
+        Every <b>Save event to log</b> is stored below. Build a clean report — pick an event or a
+        whole day, choose which sections to include, then copy or share.
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">📋</span> Report builder</div>
+        <div class="fld"><label>Scope</label>
+          <select id="rep-scope">
+            <option value="last">Last saved event</option>
+            <option value="event">Single event</option>
+            <option value="day">Whole day (all events)</option>
+            <option value="all">All saved events</option>
+            <option value="range">Date range…</option>
+          </select>
+        </div>
+        <div class="fld" id="rep-pick-wrap"><label>Event</label>
+          <select id="rep-pick"></select>
+        </div>
+        <div class="row2" id="rep-range-wrap" style="display:none">
+          <div class="fld"><label>From</label><input type="date" id="rep-from"></div>
+          <div class="fld"><label>To</label><input type="date" id="rep-to"></div>
+        </div>
+        <div class="fld"><label>Include sections</label>
+          <div class="sec-picker" id="rep-sections">
+            <label class="sec-chip on"><input type="checkbox" data-sec="engine" checked> Engine</label>
+            <label class="sec-chip on"><input type="checkbox" data-sec="bunker" checked> Bunker</label>
+            <label class="sec-chip on"><input type="checkbox" data-sec="oil" checked> Lub Oil</label>
+            <label class="sec-chip on"><input type="checkbox" data-sec="water" checked> Water</label>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn btn-ghost" id="rep-copy" style="flex:1">Copy</button>
+          <button class="btn btn-gold" id="rep-share" style="flex:1">Share</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-ghost" id="rep-xls" style="flex:1">⬇ Excel</button>
+          <button class="btn btn-ghost" id="rep-pdf" style="flex:1">🖨 PDF</button>
+        </div>
+        <div class="hint">Excel: styled .xls log of the selected scope. PDF: professional printable report (use your device's "Save as PDF").</div>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">📄</span> Preview</div>
+        <pre id="rep-preview" class="rep-pre">—</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-t"><span class="ic">🗂️</span> Event log</div>
+        <div id="log-list"></div>
+      </div>
+    </section>
+
+    <!-- VESSEL -->
+    <section class="panel" id="p-vessel">
+      <div class="info-note">
+        Enter your vessel's fixed data <b>once</b>. It's saved on this device and used for all calculations.
+        Change it only when you join a different ship.
+      </div>
+      <div class="card">
+        <div class="card-t"><span class="ic">🚢</span> Vessel particulars</div>
+        <div class="fld"><label>Vessel name</label><input type="text" id="v-name" placeholder="M/V ..." style="font-family:'Inter',sans-serif"></div>
+        <div class="row2">
+          <div class="fld"><label>IMO number</label><input type="text" inputmode="numeric" id="v-imo" placeholder="e.g. 9456789"></div>
+          <div class="fld"><label>Call sign</label><input type="text" id="v-callsign" placeholder="e.g. V7A1234" style="text-transform:uppercase;font-family:'Inter',sans-serif"></div>
+        </div>
+        <div class="fld"><label>Propeller pitch (m)</label><input type="text" inputmode="decimal" id="v-pitch" placeholder="e.g. 4.5"></div>
+        <div class="row2">
+          <div class="fld"><label>MCR power (kW)</label><input type="text" inputmode="decimal" id="v-mcrkw" placeholder="e.g. 8000"></div>
+          <div class="fld"><label>MCR RPM</label><input type="text" inputmode="decimal" id="v-mcrrpm" placeholder="e.g. 91"></div>
+        </div>
+        <div class="hint">Pitch → used for slip. MCR power &amp; RPM → used for engine power/load (P = MCR × (rpm/mcrRpm)³).</div>
+      </div>
+      <div class="card">
+        <div class="card-t"><span class="ic">⚠️</span> Reset</div>
+        <button class="btn btn-ghost" id="btn-hardreset" style="width:100%">Reset all data</button>
+        <div class="hint">Clears every entry (vessel, fuel, oil, history) and starts fresh. Use if data looks mixed up.</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="btmbar">
+    <button class="btn btn-gold" id="btn-savelog" style="flex:2;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.25">
+      <span>✓ Save event to log</span>
+      <small id="save-ctx" style="font-weight:400;font-size:10px;opacity:.85"></small>
+    </button>
+  </div>
+</div>
+<div class="save-flash" id="flash">Saved</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const num=v=>{ if(v==null)return NaN; const s=String(v).replace(',','.').replace(/[^0-9.\-]/g,''); const n=parseFloat(s); return isNaN(n)?NaN:n; };
+const fmt=(n,d=2)=>isNaN(n)?'—':n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+let S=load();
+
+function load(){
+  try{ const r=localStorage.getItem('noonreport_v1'); if(r) return JSON.parse(r); }catch(e){}
+  return { vessel:{}, today:{}, history:[] };
+}
+function save(silent){
+  try{ localStorage.setItem('noonreport_v1', JSON.stringify(S)); }catch(e){}
+  if(!silent){ const f=$('flash'); f.classList.add('show'); setTimeout(()=>f.classList.remove('show'),1200); }
+}
+
+/* ---- tabs ---- */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    $('p-'+t.dataset.tab).classList.add('on');
+  };
+});
+
+/* ---- vessel fields ---- */
+['v-name','v-imo','v-callsign','v-pitch','v-mcrkw','v-mcrrpm'].forEach(id=>{
+  const el=$(id); const key=id.slice(2);
+  el.value = S.vessel[key]!=null ? S.vessel[key] : '';
+  el.oninput=()=>{ S.vessel[key]=el.value; refreshVesselName(); computeME(); save(true); };
+});
+function refreshVesselName(){
+  let t = S.vessel.name ? S.vessel.name : 'No vessel set';
+  const extra=[]; if(S.vessel.imo) extra.push('IMO '+S.vessel.imo); if(S.vessel.callsign) extra.push(String(S.vessel.callsign).toUpperCase());
+  if(S.vessel.name && extra.length) t += ' · ' + extra.join(' · ');
+  $('vname').textContent = t;
+}
+
+/* ---- ME fields ---- */
+function updateSaveCtx(){
+  const el=document.getElementById('save-ctx'); if(!el) return;
+  const d=S.today['r_date']||'—', t=S.today['r_time']||'—', e=S.today['r_event']||'Noon';
+  el.textContent = d+' · '+t+' · '+e;
+}
+setTimeout(updateSaveCtx,300);
+['r-date','r-time','r-event','me-prev','me-now','me-hrs','me-dist'].forEach(id=>{
+  const el=$(id); const key=id.replace('-','_');
+  if(S.today[key]!=null) el.value=S.today[key];
+  el.oninput=el.onchange=()=>{ S.today[key]=el.value; computeME();
+    if(id==='me-hrs' && typeof renderConsumers==='function'){ renderConsumers(); if(typeof renderOilConsumers==='function') renderOilConsumers(); } // ME run/h guncelle (fuel+oil)
+    updateSaveCtx(); save(true); };
+});
+// default date today
+if(!S.today['r_date']){ $('r-date').valueAsDate=new Date(); S.today['r_date']=$('r-date').value; }
+if(!S.today['r_time']){ const d=new Date(); $('r-time').value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); S.today['r_time']=$('r-time').value; }
+
+/* ---- ME computation ---- */
+function computeME(){
+  const prev=num(S.today['me_prev']), now=num(S.today['me_now']);
+  const hrs=num(S.today['me_hrs']), dist=num(S.today['me_dist']);
+  const pitch=num(S.vessel.pitch), mcrKw=num(S.vessel.mcrkw), mcrRpm=num(S.vessel.mcrrpm);
+
+  const out=$('me-out'); const pow=$('pow-out'); const powHint=$('pow-hint');
+
+  // revolutions & avg rpm
+  let rows='';
+  let avgRpm=NaN, engDist=NaN, slip=NaN, spdH=NaN, spdD=NaN;
+  if(!isNaN(prev)&&!isNaN(now)&&!isNaN(hrs)&&hrs>0){
+    const revs=now-prev;
+    avgRpm=revs/(hrs*60);                      // rev/min
+    rows+=orow('Total revolutions', fmt(revs,0), 'rev');
+    rows+=orow('Average RPM', fmt(avgRpm,1), 'rpm', true);
+    if(!isNaN(pitch)){
+      // engine distance (NM) = avgRpm * pitch(m) * runtime(min) / 1852
+      engDist = avgRpm * pitch * (hrs*60) / 1852;
+      rows+=orow('Engine distance', fmt(engDist,1), 'NM');
+      if(!isNaN(dist)){
+        rows+=orow('Vessel distance', fmt(dist,1), 'NM');
+        slip = (engDist-dist)/engDist*100;
+        rows+=orow('Slip', fmt(slip,1)+' %', '', true);
+      } else {
+        rows+='<div class="hint" style="margin:4px 0 0">Slip: enter <b>Distance</b> above to calculate.</div>';
+      }
+    } else {
+      rows+='<div class="hint" style="margin:4px 0 0">Slip &amp; engine distance: enter <b>propeller pitch</b> in the Vessel tab.</div>';
+    }
+    if(!isNaN(dist)){
+      spdH=dist/hrs; spdD=dist/hrs*24;
+      rows+=orow('Speed', fmt(spdH,2)+' kn', '');
+      rows+=orow('Distance / 24h', fmt(spdD,1), 'NM');
+    }
+  } else {
+    rows='<div class="hint" style="margin:0">Enter counters + running hours to calculate.</div>';
+  }
+  out.innerHTML=rows;
+
+  // power (propeller law)
+  if(!isNaN(avgRpm)&&!isNaN(mcrKw)&&!isNaN(mcrRpm)&&mcrRpm>0){
+    const ratio=avgRpm/mcrRpm;
+    const kw=mcrKw*Math.pow(ratio,3);
+    const load=Math.pow(ratio,3)*100;
+    const bhp=kw*1.35962;
+    let p='';
+    p+=orow('Engine power', fmt(kw,0), 'kW', true);
+    p+=orow('Power (BHP)', fmt(bhp,0), 'bhp');
+    p+=orow('Engine load', fmt(load,1)+' %', '');
+    pow.innerHTML=p;
+    powHint.textContent='P = '+fmt(mcrKw,0)+' kW × ('+fmt(avgRpm,1)+' / '+fmt(mcrRpm,0)+')³';
+    // store computed kW for later (oil g/kWh)
+    S.today._kw=kw; S.today._kwh=kw*(isNaN(hrs)?0:hrs);
+  } else {
+    pow.innerHTML='<div class="hint" style="margin:0">Set MCR power &amp; RPM in the Vessel tab, and enter counters, to see engine power.</div>';
+    powHint.textContent='';
+    S.today._kw=NaN; S.today._kwh=NaN;
+  }
+  if(typeof computeOil==='function') computeOil();
+}
+function orow(k,v,unit,big){
+  return '<div class="out-row'+(big?' big':'')+'"><span class="k">'+k+'</span>'+
+    '<span class="v">'+v+(unit?' <small>'+unit+'</small>':'')+'</span></div>';
+}
+
+/* ============ FUEL ============ */
+// State: S.fuelTypes = [{id,name,density,temp,prevRob,received}], S.consumers = [{id,name,ftId,mode,prevL,nowL,mt}]
+function ensureFuelDefaults(){
+  if(!S.fuelTypes){
+    S.fuelTypes=[
+      {id:ftId(), name:'HFO', unit:'MT', density:'0.985', prevRob:'', received:''},
+      {id:ftId(), name:'MGO', unit:'MT', density:'0.860', prevRob:'', received:''}
+    ];
+  }
+  // migrate: eski kayitlarda unit yoksa ekle, temp'i tuketiciye tasima (basit: sil)
+  S.fuelTypes.forEach(ft=>{ if(!ft.unit) ft.unit='MT'; });
+  if(!S.consumers){
+    S.consumers=[
+      {id:ftId(), name:'M/E', ftId:S.fuelTypes[0].id, mode:'flow', prevL:'', nowL:'', mt:'', temp:'50', density:'', _me:true},
+      {id:ftId(), name:'Boiler', ftId:S.fuelTypes[0].id, mode:'manual', prevL:'', nowL:'', mt:'', temp:'', density:''},
+      {id:ftId(), name:'Incinerator', ftId:S.fuelTypes[1].id, mode:'manual', prevL:'', nowL:'', mt:'', temp:'', density:''}
+    ];
+  }
+  S.consumers.forEach(c=>{ if(c.temp===undefined)c.temp=''; if(c.density===undefined)c.density=''; });
+  // MIGRATION: eski yapida S.consumers icindeki A/E'leri temizle (artik AUX picker'dan geliyorlar)
+  const beforeLen=S.consumers.length;
+  S.consumers=S.consumers.filter(c=>{
+    const nm=(c.name||'').toLowerCase().replace(/[\s\.\/]/g,'');
+    // "ae1", "auxeng1", "a/e2" gibi eski aux isimlerini at (ama ME/Boiler/Incinerator kalsin)
+    const isOldAux = /^ae\d+$/.test(nm) || /^auxeng\d+$/.test(nm) || /^aux\d+$/.test(nm) || /^auxiliaryengine\d+$/.test(nm);
+    return !isOldAux;
+  });
+  if(S.consumers.length!==beforeLen) save(true);
+  // ME garantisi (ilk consumer)
+  if(!S.consumers.some(c=>c._me) && S.consumers[0]) S.consumers[0]._me=true;
+  if(!S.auxRunning) S.auxRunning=[1]; // hangi AUX'lar calisiyor (numaralar)
+  if(!S.auxConsumers) S.auxConsumers={}; // {1:{prevL,nowL,mt,mode,ftId,temp,density}, ...}
+}
+let _idc=Date.now();
+function ftId(){ return 'f'+(_idc++); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// litre + density + temp -> MT
+function litresToMT(litres, density, temp){
+  if(isNaN(litres)||isNaN(density)) return NaN;
+  const m3=litres/1000;
+  const t=isNaN(temp)?15:temp;
+  const vcf=1 - 0.00065*(t-15);
+  return m3 * density * vcf;
+}
+
+function renderFuelTypes(){
+  ensureFuelDefaults();
+  const box=$('ftype-list'); box.innerHTML='';
+  S.fuelTypes.forEach(ft=>{
+    const d=document.createElement('div'); d.className='ftype';
+    const robUnit = ft.unit==='MT'?'MT':(ft.unit==='m3'?'m³':'L');
+    d.innerHTML=
+      '<div class="ftype-head">'+
+        '<input class="fname" value="'+esc(ft.name)+'" data-k="name">'+
+        '<button class="del">×</button>'+
+      '</div>'+
+      '<div class="ftype-grid">'+
+        '<div class="mini"><label>Density (kg/L @15°)</label><input inputmode="decimal" value="'+esc(ft.density)+'" data-k="density"></div>'+
+        '<div class="mini"><label>Received ('+robUnit+')</label><input inputmode="decimal" value="'+esc(ft.received)+'" data-k="received"></div>'+
+        '<div class="mini" style="grid-column:1/-1"><label>Prev ROB ('+robUnit+')</label><input inputmode="decimal" value="'+esc(ft.prevRob)+'" data-k="prevRob"></div>'+
+      '</div>';
+    d.querySelectorAll('input').forEach(inp=>{ inp.oninput=()=>{ ft[inp.dataset.k]=inp.value; computeFuel(); renderConsumers(); save(true); }; });
+    d.querySelector('.del').onclick=()=>{ if(!confirm('Remove fuel type "'+ft.name+'"?'))return;
+      S.fuelTypes=S.fuelTypes.filter(x=>x.id!==ft.id); renderFuelTypes(); renderConsumers(); computeFuel(); save(true); };
+    box.appendChild(d);
+  });
+}
+
+// AUX picker (1-6)
+function renderAuxPicker(){
+  ensureFuelDefaults();
+  const box=$('aux-picker'); box.innerHTML='';
+  for(let i=1;i<=6;i++){
+    const n=i;
+    const on=S.auxRunning.includes(n);
+    const chip=document.createElement('div');
+    chip.className='aux-chip'+(on?' on':'');
+    chip.innerHTML='<span class="box">'+(on?'✓':'')+'</span> A/E '+n;
+    chip.onclick=()=>{
+      if(S.auxRunning.includes(n)){
+        S.auxRunning=S.auxRunning.filter(x=>x!==n);
+      } else {
+        S.auxRunning=[...S.auxRunning, n].sort((a,b)=>a-b);
+        if(!S.auxConsumers[n]) S.auxConsumers[n]={mode:'manual',ftId:(S.fuelTypes[1]||S.fuelTypes[0]).id,prevL:'',nowL:'',mt:'',temp:'',density:'',runh:''};
+      }
+      renderAuxPicker(); renderConsumers(); save(true);
+    };
+    box.appendChild(chip);
+  }
+}
+
+// AUX operasyon modu: idle / working / ballast-deballast (etiket, log'a yazilir)
+function opModeHTML(c){
+  const modes=[['idle','Idle'],['working','Working'],['ballast','Ballast/Deballast']];
+  let chips=modes.map(m=>{
+    const on=(c.opMode||'')===m[0];
+    return '<button type="button" class="opmode-chip'+(on?' on':'')+'" data-op="'+m[0]+'">'+m[1]+'</button>';
+  }).join('');
+  return '<div class="opmode-row">'+chips+'</div>';
+}
+
+// tek bir consumer objesi icin satir HTML+event (hem sabit hem aux icin)
+function consumerRowHTML(c, label, fixedName){
+  const ftOpts=S.fuelTypes.map(ft=>'<option value="'+ft.id+'"'+(ft.id===c.ftId?' selected':'')+'>'+esc(ft.name)+'</option>').join('');
+  const isFlow=c.mode==='flow';
+  const ft=S.fuelTypes.find(f=>f.id===c.ftId);
+  const dens = (c.density!==''&&c.density!=null)? c.density : (ft?ft.density:'');
+  // run/h: ME icin Engine'den otomatik + kilitli, digerleri kullanici girer
+  const meHrs = S.today['me_hrs']!=null ? S.today['me_hrs'] : '';
+  const runField = c._me
+    ? '<div class="mini"><label>Run/h · auto</label><input value="'+esc(meHrs)+'" readonly style="opacity:.7"></div>'
+    : '<div class="mini"><label>Run/h</label><input inputmode="decimal" value="'+esc(c.runh!=null?c.runh:'')+'" data-k="runh"></div>';
+  return ''+
+    '<div class="consumer-head">'+
+      (fixedName? '<input class="cname" value="'+esc(label)+'" readonly style="opacity:.85">' 
+                : '<input class="cname" value="'+esc(c.name!=null?c.name:label)+'" data-k="name">')+
+      (fixedName? '' : '<button class="del">×</button>')+
+    '</div>'+
+    '<div class="consumer-ctrl">'+
+      '<select data-k="ftId">'+ftOpts+'</select>'+
+      '<select data-k="mode"><option value="flow"'+(isFlow?' selected':'')+'>Flowmeter (L)</option>'+
+        '<option value="manual"'+(!isFlow?' selected':'')+'>Manual (MT)</option></select>'+
+    '</div>'+
+    (fixedName ? opModeHTML(c) : '')+
+    (isFlow
+      ? '<div class="consumer-in"><div class="mini"><label>Prev flowmeter (L)</label><input inputmode="decimal" value="'+esc(c.prevL)+'" data-k="prevL"></div>'+
+        '<div class="mini"><label>Curr flowmeter (L)</label><input inputmode="decimal" value="'+esc(c.nowL)+'" data-k="nowL"></div></div>'+
+        '<div class="fm-td3"><div class="mini"><label>Temp°C</label><input inputmode="decimal" value="'+esc(c.temp)+'" data-k="temp" placeholder="50"></div>'+
+        '<div class="mini"><label>Density</label><input inputmode="decimal" value="'+esc(dens)+'" data-k="density" placeholder="'+(ft?esc(ft.density):'')+'"></div>'+
+        (c._me ? '<div class="mini"><label>Run/h·auto</label><input value="'+esc(meHrs)+'" readonly style="opacity:.7"></div>'
+               : '<div class="mini"><label>Run/h</label><input inputmode="decimal" value="'+esc(c.runh!=null?c.runh:'')+'" data-k="runh"></div>')+
+        '</div>'
+      : '<div class="consumer-in">'+runField+
+        '<div class="mini"><label>Consumption (MT)</label><input inputmode="decimal" value="'+esc(c.mt)+'" data-k="mt"></div></div>')+
+    '<div class="consumer-mt"><span class="cm-lbl">Consumption</span> <span data-mt>—</span></div>';
+}
+
+function bindConsumerRow(d, c, onStructural, onDelete){
+  d.querySelectorAll('input,select').forEach(inp=>{
+    if(inp.hasAttribute('readonly')) return;
+    const ev=inp.tagName==='SELECT'?'onchange':'oninput';
+    inp[ev]=()=>{
+      c[inp.dataset.k]=inp.value;
+      if(inp.dataset.k==='mode'||inp.dataset.k==='ftId'){ onStructural(); }
+      computeFuel(); save(true);
+    };
+  });
+  // op-mode chip'leri (idle/working/ballast)
+  d.querySelectorAll('.opmode-chip').forEach(btn=>{
+    btn.onclick=()=>{
+      const op=btn.dataset.op;
+      c.opMode = (c.opMode===op) ? '' : op;  // ayni moda tekrar basinca kaldir
+      onStructural(); save(true);
+    };
+  });
+  const del=d.querySelector('.del');
+  if(del&&onDelete) del.onclick=onDelete;
+}
+
+function renderConsumers(){
+  ensureFuelDefaults();
+  const box=$('con-list'); box.innerHTML='';
+  // ME'yi garantiye al (ilk consumer = ME)
+  if(!S.consumers.some(c=>c._me)){ if(S.consumers[0]) S.consumers[0]._me=true; }
+
+  const meCons = S.consumers.filter(c=>c._me);
+  const otherCons = S.consumers.filter(c=>!c._me);
+
+  const addRow=(c,label,fixed)=>{
+    const d=document.createElement('div'); d.className='consumer';
+    d.innerHTML=consumerRowHTML(c, label, fixed);
+    bindConsumerRow(d, c, ()=>renderConsumers(), fixed?null:()=>{
+      if(!confirm('Remove "'+(c.name||'consumer')+'"?'))return;
+      S.consumers=S.consumers.filter(x=>x.id!==c.id); renderConsumers(); computeFuel(); save(true);
+    });
+    box.appendChild(d);
+  };
+
+  // 1) ME (en ustte, sabit)
+  meCons.forEach(c=>addRow(c, c.name||'M/E', false));
+
+  // 2) AUX'lar — numarik sirada (auxRunning zaten sorted)
+  [...S.auxRunning].sort((a,b)=>a-b).forEach(n=>{
+    if(!S.auxConsumers[n]) S.auxConsumers[n]={mode:'manual',ftId:(S.fuelTypes[1]||S.fuelTypes[0]).id,prevL:'',nowL:'',mt:'',temp:'',density:''};
+    addRow(S.auxConsumers[n], 'A/E '+n, true);
+  });
+
+  // 3) diger sabitler (Boiler, Incinerator, extra)
+  otherCons.forEach(c=>addRow(c, c.name||'Consumer', false));
+
+  computeFuel();
+}
+
+function consumerMT(c){
+  const ft=S.fuelTypes.find(f=>f.id===c.ftId);
+  if(c.mode==='flow'){
+    const prev=num(c.prevL), now=num(c.nowL);
+    if(isNaN(prev)||isNaN(now)) return NaN;
+    const litres=now-prev;
+    const dens = (c.density!==''&&c.density!=null)? num(c.density) : num(ft&&ft.density);
+    return litresToMT(litres, dens, num(c.temp));
+  } else {
+    return num(c.mt);
+  }
+}
+
+// tum tuketicileri tek listede topla (ME+extra + aux)
+function allConsumers(){
+  ensureFuelDefaults();
+  const list=[...S.consumers];
+  S.auxRunning.forEach(n=>{ if(S.auxConsumers[n]) list.push(S.auxConsumers[n]); });
+  return list;
+}
+
+function computeFuel(){
+  ensureFuelDefaults();
+  // her satirin MT'sini goster — SIRA renderConsumers ile BIREBIR AYNI olmali:
+  // ME (_me) -> AUX (numarik) -> diger sabitler (Boiler, Incinerator, extra)
+  const rows=[...document.querySelectorAll('#con-list .consumer')];
+  const meCons=S.consumers.filter(c=>c._me);
+  const otherCons=S.consumers.filter(c=>!c._me);
+  const auxCons=[...S.auxRunning].sort((a,b)=>a-b).map(n=>S.auxConsumers[n]).filter(Boolean);
+  const cons=[...meCons, ...auxCons, ...otherCons];
+  rows.forEach((el,i)=>{
+    const c=cons[i]; if(!c) return;
+    const mt=consumerMT(c);
+    const mtEl=el.querySelector('[data-mt]');
+    if(mtEl){
+      if(isNaN(mt)) mtEl.innerHTML='—';
+      else {
+        let extra='';
+        if(c.mode==='flow'){ const l=num(c.nowL)-num(c.prevL); if(!isNaN(l)) extra=' <small>('+fmt(l,0)+' L)</small>'; }
+        mtEl.innerHTML=fmt(mt,3)+' MT'+extra;
+      }
+    }
+  });
+  // ROB by fuel type
+  const rob=$('rob-out'); if(!rob) return;
+  let html='';
+  S.fuelTypes.forEach(ft=>{
+    let consumed=0, any=false;
+    allConsumers().forEach(c=>{ if(c.ftId===ft.id){ const m=consumerMT(c); if(!isNaN(m)){ consumed+=m; any=true; } } });
+    const prev=num(ft.prevRob), recv=num(ft.received);
+    const newRob=(isNaN(prev)?0:prev)+(isNaN(recv)?0:recv)-consumed;
+    const u=ft.unit==='MT'?'MT':(ft.unit==='m3'?'m³':'L');
+    html+='<div class="out" style="margin-bottom:8px">';
+    html+='<div class="out-row"><span class="k">'+esc(ft.name)+' — consumed</span><span class="v">'+(any?fmt(consumed,3):'0.000')+' <small>MT</small></span></div>';
+    if(!isNaN(recv)&&recv>0) html+='<div class="out-row"><span class="k">Received</span><span class="v">+'+fmt(recv,3)+' <small>'+u+'</small></span></div>';
+    html+='<div class="out-row big"><span class="k">'+esc(ft.name)+' ROB</span><span class="v">'+(isNaN(prev)&&!any?'—':fmt(newRob,3))+' <small>'+u+'</small></span></div>';
+    html+='</div>';
+  });
+  rob.innerHTML=html||'<div class="hint" style="margin:0">Add a fuel type to see ROB.</div>';
+}
+
+/* collapsible bunker */
+$('bunker-head').onclick=()=>{
+  const b=$('bunker-body'), ch=$('bunker-chev');
+  const open=b.style.display!=='none';
+  b.style.display=open?'none':'block';
+  ch.classList.toggle('open',!open);
+};
+/* collapsible oil types */
+$('oiltype-head').onclick=()=>{
+  const b=$('oiltype-body'), ch=$('oiltype-chev');
+  const open=b.style.display!=='none';
+  b.style.display=open?'none':'block';
+  ch.classList.toggle('open',!open);
+};
+
+$('add-ftype').onclick=()=>{ ensureFuelDefaults(); S.fuelTypes.push({id:ftId(),name:'Fuel',unit:'MT',density:'0.900',prevRob:'',received:''}); renderFuelTypes(); renderConsumers(); save(true); };
+$('add-con').onclick=()=>{ ensureFuelDefaults(); S.consumers.push({id:ftId(),name:'Consumer',ftId:S.fuelTypes[0]?S.fuelTypes[0].id:null,mode:'manual',prevL:'',nowL:'',mt:'',temp:'',density:''}); renderConsumers(); save(true); };
+
+
+/* ============ OIL ============ */
+function ensureOilDefaults(){
+  if(!S.oilTypes){
+    S.oilTypes=[
+      {id:ftId(), name:'Cyl Oil', density:'0.910', prevRob:'', received:''},
+      {id:ftId(), name:'System Oil', density:'0.900', prevRob:'', received:''},
+      {id:ftId(), name:'AE/DG Oil', density:'0.900', prevRob:'', received:''}
+    ];
+  }
+  if(!S.oilConsumers){
+    S.oilConsumers=[
+      {id:ftId(), name:'M/E Cyl Oil', otId:S.oilTypes[0].id, mode:'flow', prevL:'', nowL:'', kg:'', isCyl:true},
+      {id:ftId(), name:'M/E System Oil', otId:S.oilTypes[1].id, mode:'manual', prevL:'', nowL:'', kg:'', isCyl:false},
+      {id:ftId(), name:'A/E Oil', otId:S.oilTypes[2].id, mode:'manual', prevL:'', nowL:'', kg:'', isCyl:false}
+    ];
+  }
+}
+function oilLitresToKg(litres, density){ if(isNaN(litres)||isNaN(density))return NaN; return litres*density; }
+
+function renderOilTypes(){
+  ensureOilDefaults();
+  const box=$('otype-list'); box.innerHTML='';
+  S.oilTypes.forEach(ot=>{
+    const d=document.createElement('div'); d.className='ftype';
+    d.innerHTML=
+      '<div class="ftype-head"><input class="fname" value="'+esc(ot.name)+'" data-k="name"><button class="del">×</button></div>'+
+      '<div class="ftype-grid">'+
+        '<div class="mini"><label>Density (kg/L)</label><input inputmode="decimal" value="'+esc(ot.density)+'" data-k="density"></div>'+
+        '<div class="mini"><label>Received (L)</label><input inputmode="decimal" value="'+esc(ot.received)+'" data-k="received"></div>'+
+        '<div class="mini" style="grid-column:1/-1"><label>Prev ROB (L)</label><input inputmode="decimal" value="'+esc(ot.prevRob)+'" data-k="prevRob"></div>'+
+      '</div>';
+    d.querySelectorAll('input').forEach(inp=>{ inp.oninput=()=>{ ot[inp.dataset.k]=inp.value; computeOil(); save(true); }; });
+    d.querySelector('.del').onclick=()=>{ if(!confirm('Remove oil type "'+ot.name+'"?'))return;
+      S.oilTypes=S.oilTypes.filter(x=>x.id!==ot.id); renderOilTypes(); renderOilConsumers(); computeOil(); save(true); };
+    box.appendChild(d);
+  });
+}
+
+function renderOilConsumers(){
+  ensureOilDefaults();
+  const box=$('ocon-list'); box.innerHTML='';
+  S.oilConsumers.forEach(c=>{
+    const d=document.createElement('div'); d.className='consumer';
+    const otOpts=S.oilTypes.map(ot=>'<option value="'+ot.id+'"'+(ot.id===c.otId?' selected':'')+'>'+esc(ot.name)+'</option>').join('');
+    const isFlow=c.mode==='flow';
+    d.innerHTML=
+      '<div class="consumer-head"><input class="cname" value="'+esc(c.name)+'" data-k="name"><button class="del">×</button></div>'+
+      '<div class="consumer-ctrl">'+
+        '<select data-k="otId">'+otOpts+'</select>'+
+        '<select data-k="mode"><option value="flow"'+(isFlow?' selected':'')+'>Flowmeter (L)</option>'+
+          '<option value="manual"'+(!isFlow?' selected':'')+'>Manual (L)</option></select>'+
+      '</div>'+
+      (isFlow
+        ? '<div class="consumer-in"><div class="mini"><label>Previous flowmeter (L)</label><input inputmode="decimal" value="'+esc(c.prevL)+'" data-k="prevL"></div>'+
+          '<div class="mini"><label>Current flowmeter (L)</label><input inputmode="decimal" value="'+esc(c.nowL)+'" data-k="nowL"></div></div>'
+        : '<div class="consumer-in one"><div class="mini"><label>Consumption (L)</label><input inputmode="decimal" value="'+esc(c.kg)+'" data-k="kg"></div></div>')+
+      (c.isCyl
+        ? '<div class="consumer-in one" style="margin-top:8px"><div class="mini"><label>Run/h · M/E auto (editable)</label><input inputmode="decimal" value="'+esc(oilRunH(c))+'" data-k="runh" placeholder="'+esc(S.today['me_hrs']||'')+'"></div></div>'
+        : '')+
+      (/cyl/i.test(c.name||'')
+        ? '<label style="display:flex;align-items:center;gap:7px;margin-top:8px;font-size:11px;color:var(--grey);cursor:pointer">'+
+          '<input type="checkbox" data-k="isCyl" '+(c.isCyl?'checked':'')+' style="width:auto;accent-color:var(--gold)"> Cylinder oil (g/kWh feed rate)</label>'
+        : '')+
+      '<div class="consumer-mt"><span class="cm-lbl">Consumption</span> <span data-mt>—</span></div>';
+    d.querySelectorAll('input,select').forEach(inp=>{
+      const ev=inp.type==='checkbox'?'onchange':(inp.tagName==='SELECT'?'onchange':'oninput');
+      inp[ev]=()=>{
+        c[inp.dataset.k]= inp.type==='checkbox'?inp.checked:inp.value;
+        if(inp.dataset.k==='mode'||inp.dataset.k==='otId'){ renderOilConsumers(); }
+        computeOil(); save(true);
+      };
+    });
+    d.querySelector('.del').onclick=()=>{ if(!confirm('Remove "'+c.name+'"?'))return;
+      S.oilConsumers=S.oilConsumers.filter(x=>x.id!==c.id); renderOilConsumers(); computeOil(); save(true); };
+    box.appendChild(d);
+  });
+  computeOil();
+}
+
+function oilConsumerLitres(c){ if(c.mode==='flow'){ const p=num(c.prevL),n=num(c.nowL); if(isNaN(p)||isNaN(n))return NaN; return n-p; } return num(c.kg); }
+function oilConsumerKg(c){ const ot=S.oilTypes.find(o=>o.id===c.otId); const l=oilConsumerLitres(c); if(isNaN(l))return NaN; return oilLitresToKg(l,num(ot&&ot.density)); }
+// cyl oil ise ve kullanici run/h girmemisse ME hrs'i goster (otomatik ama editable)
+function oilRunH(c){ if(c.runh!=null && c.runh!=='') return c.runh; if(c.isCyl) return S.today['me_hrs']||''; return ''; }
+
+function computeOil(){
+  ensureOilDefaults();
+  const meKwh=num(S.today._kwh);
+  document.querySelectorAll('#ocon-list .consumer').forEach((el,i)=>{
+    const c=S.oilConsumers[i]; if(!c) return;
+    const kg=oilConsumerKg(c), l=oilConsumerLitres(c);
+    const mtEl=el.querySelector('[data-mt]'); if(!mtEl) return;
+    if(isNaN(kg)){ mtEl.innerHTML='—'; return; }
+    let txt=fmt(kg,1)+' kg';
+    if(!isNaN(l)) txt+=' <small>('+fmt(l,0)+' L)</small>';
+    if(c.isCyl && !isNaN(meKwh) && meKwh>0){
+      const g=(kg*1000)/meKwh;
+      txt+='<br><span style="color:var(--gold)">'+fmt(g,2)+' g/kWh</span>';
+    } else if(c.isCyl){
+      txt+='<br><small style="color:var(--faint)">enter M/E counters for g/kWh</small>';
+    }
+    mtEl.innerHTML=txt;
+  });
+  const rob=$('orob-out'); if(!rob) return;
+  let html='';
+  let grandConsumedL=0, grandConsumedKg=0, grandRobL=0, anyRob=false;
+  S.oilTypes.forEach(ot=>{
+    let consumedL=0, consumedKg=0, any=false;
+    S.oilConsumers.forEach(c=>{ if(c.otId===ot.id){ const l=oilConsumerLitres(c); const kg=oilConsumerKg(c); if(!isNaN(l)){ consumedL+=l; any=true; } if(!isNaN(kg)) consumedKg+=kg; } });
+    const prev=num(ot.prevRob), recv=num(ot.received);
+    const newRob=(isNaN(prev)?0:prev)+(isNaN(recv)?0:recv)-consumedL;
+    grandConsumedL+=consumedL; grandConsumedKg+=consumedKg;
+    if(!(isNaN(prev)&&!any)){ grandRobL+=newRob; anyRob=true; }
+    html+='<div class="out" style="margin-bottom:8px">';
+    html+='<div class="out-row"><span class="k">'+esc(ot.name)+' — consumed</span><span class="v">'+(any?fmt(consumedL,0):'0')+' <small>L</small>'+(any&&consumedKg>0?' · '+fmt(consumedKg,1)+' <small>kg</small>':'')+'</span></div>';
+    if(!isNaN(recv)&&recv>0) html+='<div class="out-row"><span class="k">Received</span><span class="v">+'+fmt(recv,0)+' <small>L</small></span></div>';
+    html+='<div class="out-row big"><span class="k">'+esc(ot.name)+' ROB</span><span class="v">'+(isNaN(prev)&&!any?'—':fmt(newRob,0))+' <small>L</small></span></div>';
+    html+='</div>';
+  });
+  // TOTAL OIL (genel toplam)
+  html+='<div class="out" style="margin-bottom:0;border-color:var(--gold);background:linear-gradient(135deg,rgba(251,191,36,.08),var(--navy2))">';
+  html+='<div class="out-row"><span class="k" style="color:var(--gold-lt);font-weight:700">TOTAL — consumed</span><span class="v">'+fmt(grandConsumedL,0)+' <small>L</small>'+(grandConsumedKg>0?' · '+fmt(grandConsumedKg,1)+' <small>kg</small>':'')+'</span></div>';
+  html+='<div class="out-row big"><span class="k" style="color:var(--gold-lt);font-weight:700">TOTAL ROB</span><span class="v">'+(anyRob?fmt(grandRobL,0):'—')+' <small>L</small></span></div>';
+  html+='</div>';
+  rob.innerHTML=html||'<div class="hint" style="margin:0">Add an oil type to see ROB.</div>';
+}
+
+$('add-otype').onclick=()=>{ ensureOilDefaults(); S.oilTypes.push({id:ftId(),name:'Oil',density:'0.900',prevRob:'',received:''}); renderOilTypes(); renderOilConsumers(); save(true); };
+$('add-ocon').onclick=()=>{ ensureOilDefaults(); S.oilConsumers.push({id:ftId(),name:'Consumer',otId:S.oilTypes[0]?S.oilTypes[0].id:null,mode:'manual',prevL:'',nowL:'',kg:'',isCyl:false}); renderOilConsumers(); save(true); };
+
+/* ============ FRESH WATER ============ */
+function ensureWaterDefaults(){
+  if(!S.fwg) S.fwg=[{id:ftId(), name:'FWG', mode:'flow', prevL:'', nowL:'', mt:''}];
+  if(!S.fwTanks) S.fwTanks=[{id:ftId(), name:'FW Tank', level:''}];
+}
+
+function renderFWG(){
+  ensureWaterDefaults();
+  const box=$('fwg-list'); box.innerHTML='';
+  S.fwg.forEach(g=>{
+    const isFlow=g.mode==='flow';
+    const d=document.createElement('div'); d.className='consumer';
+    d.innerHTML=
+      '<div class="consumer-head"><input class="cname" value="'+esc(g.name)+'" data-k="name"><button class="del">×</button></div>'+
+      '<div class="consumer-ctrl" style="grid-template-columns:1fr">'+
+        '<select data-k="mode"><option value="flow"'+(isFlow?' selected':'')+'>Flowmeter</option>'+
+          '<option value="manual"'+(!isFlow?' selected':'')+'>Manual (MT)</option></select>'+
+      '</div>'+
+      (isFlow
+        ? '<div class="consumer-in"><div class="mini"><label>Previous flowmeter</label><input inputmode="decimal" value="'+esc(g.prevL)+'" data-k="prevL"></div>'+
+          '<div class="mini"><label>Current flowmeter</label><input inputmode="decimal" value="'+esc(g.nowL)+'" data-k="nowL"></div></div>'
+        : '<div class="consumer-in one"><div class="mini"><label>Produced (MT)</label><input inputmode="decimal" value="'+esc(g.mt)+'" data-k="mt"></div></div>')+
+      '<div class="consumer-mt"><span class="cm-lbl">Produced</span> <span data-p>—</span></div>';
+    d.querySelectorAll('input,select').forEach(inp=>{
+      const ev=inp.tagName==='SELECT'?'onchange':'oninput';
+      inp[ev]=()=>{ g[inp.dataset.k]=inp.value; if(inp.dataset.k==='mode') renderFWG(); computeWater(); save(true); };
+    });
+    d.querySelector('.del').onclick=()=>{ if(!confirm('Remove "'+g.name+'"?'))return;
+      S.fwg=S.fwg.filter(x=>x.id!==g.id); renderFWG(); computeWater(); save(true); };
+    box.appendChild(d);
+  });
+  computeWater();
+}
+
+function renderFWTanks(){
+  ensureWaterDefaults();
+  const box=$('fwtank-list'); box.innerHTML='';
+  S.fwTanks.forEach(t=>{
+    const d=document.createElement('div'); d.className='ftype';
+    d.innerHTML=
+      '<div class="ftype-head"><input class="fname" value="'+esc(t.name)+'" data-k="name"><button class="del">×</button></div>'+
+      '<div class="mini"><label>Current level (MT)</label><input inputmode="decimal" value="'+esc(t.level)+'" data-k="level"></div>';
+    d.querySelectorAll('input').forEach(inp=>{ inp.oninput=()=>{ t[inp.dataset.k]=inp.value; computeWater(); save(true); }; });
+    d.querySelector('.del').onclick=()=>{ if(!confirm('Remove "'+t.name+'"?'))return;
+      S.fwTanks=S.fwTanks.filter(x=>x.id!==t.id); renderFWTanks(); computeWater(); save(true); };
+    box.appendChild(d);
+  });
+  computeWater();
+}
+
+function fwgProduced(g){ if(g.mode==='flow'){ const p=num(g.prevL),n=num(g.nowL); if(isNaN(p)||isNaN(n))return NaN; return n-p; } return num(g.mt); }
+
+function computeWater(){
+  ensureWaterDefaults();
+  // her FWG produced goster
+  document.querySelectorAll('#fwg-list .consumer').forEach((el,i)=>{
+    const g=S.fwg[i]; if(!g) return;
+    const p=fwgProduced(g); const pe=el.querySelector('[data-p]');
+    if(pe) pe.innerHTML = isNaN(p)?'—':fmt(p,1)+' MT';
+  });
+  const out=$('fw-out'); if(!out) return;
+  let totalProd=0, anyProd=false, totalTank=0, anyTank=false;
+  S.fwg.forEach(g=>{ const p=fwgProduced(g); if(!isNaN(p)){ totalProd+=p; anyProd=true; } });
+  S.fwTanks.forEach(t=>{ const l=num(t.level); if(!isNaN(l)){ totalTank+=l; anyTank=true; } });
+  let html='<div class="out">';
+  html+='<div class="out-row big"><span class="k">Total produced</span><span class="v">'+(anyProd?fmt(totalProd,1):'0.0')+' <small>MT</small></span></div>';
+  html+='<div class="out-row big"><span class="k">Total in tanks</span><span class="v">'+(anyTank?fmt(totalTank,1):'—')+' <small>MT</small></span></div>';
+  html+='</div>';
+  out.innerHTML=html;
+}
+
+$('add-fwg').onclick=()=>{ ensureWaterDefaults(); S.fwg.push({id:ftId(),name:'FWG',mode:'flow',prevL:'',nowL:'',mt:''}); renderFWG(); save(true); };
+$('add-fwtank').onclick=()=>{ ensureWaterDefaults(); S.fwTanks.push({id:ftId(),name:'FW Tank',level:''}); renderFWTanks(); save(true); };
+
+/* ============ REPORT ============ */
+function repSections(){
+  const secs={};
+  document.querySelectorAll('#rep-sections input[data-sec]').forEach(cb=>{ secs[cb.dataset.sec]=cb.checked; });
+  return secs;
+}
+
+function renderLog(){
+  const box=$('log-list'); if(!box) return;
+  if(!S.history || !S.history.length){ box.innerHTML='<div class="hint" style="margin:0">No saved events yet. Fill the tabs and tap “Save event to log”.</div>'; refreshRepPicker(); return; }
+  box.innerHTML='';
+  S.history.forEach((h,idx)=>{
+    const d=document.createElement('div'); d.className='log-item';
+    let sum=[];
+    if(h.fuelRob){ const parts=Object.entries(h.fuelRob).filter(([k,v])=>v!=null).map(([k,v])=>k+' '+fmt(v,1)); if(parts.length) sum.push('ROB: '+parts.join(', ')); }
+    d.innerHTML=
+      '<div class="li-top"><span class="li-ev">'+esc(h.event||'Noon')+'</span>'+
+        '<span style="display:flex;align-items:center;gap:8px"><span class="li-dt">'+esc(h.date||'')+' '+esc(h.time||'')+'</span>'+
+        '<button class="li-del" title="Delete">×</button></span></div>'+
+      (sum.length?'<div class="li-sum">'+esc(sum.join('  ·  '))+'</div>':'');
+    d.onclick=(e)=>{
+      if(e.target.classList.contains('li-del')){
+        if(!confirm('Delete this logged event?'))return;
+        S.history.splice(idx,1); renderLog(); save(true); return;
+      }
+      // event'i rapor picker'da sec
+      $('rep-scope').value='event';
+      toggleRepPick();
+      $('rep-pick').value=String(idx);
+      buildReport();
+    };
+    box.appendChild(d);
+  });
+  refreshRepPicker();
+}
+
+function refreshRepPicker(){
+  const pick=$('rep-pick'); if(!pick) return;
+  const cur=pick.value;
+  pick.innerHTML='';
+  (S.history||[]).forEach((h,idx)=>{
+    const o=document.createElement('option'); o.value=String(idx);
+    o.textContent=(h.date||'')+' '+(h.time||'')+' · '+(h.event||'Noon');
+    pick.appendChild(o);
+  });
+  if(cur && pick.querySelector('option[value="'+cur+'"]')) pick.value=cur;
+}
+
+function toggleRepPick(){
+  const scope=$('rep-scope').value;
+  $('rep-pick-wrap').style.display = scope==='event' ? '' : 'none';
+  const rw=$('rep-range-wrap'); if(rw) rw.style.display = scope==='range' ? '' : 'none';
+}
+
+function pad(s,n){ s=String(s); return s.length>=n?s:s+' '.repeat(n-s.length); }
+
+function reportForEvent(h, secs){
+  let L=[];
+  const vname=(S.vessel && S.vessel.name)?S.vessel.name:'VESSEL';
+  L.push('NOON REPORT');
+  L.push(vname.toUpperCase());
+  {const ex=[]; if(S.vessel&&S.vessel.imo) ex.push('IMO '+S.vessel.imo); if(S.vessel&&S.vessel.callsign) ex.push('Call sign '+String(S.vessel.callsign).toUpperCase());
+   if(ex.length) L.push(ex.join(' · '));}
+  L.push('Date: '+(h.date||'')+'   Time: '+(h.time||'')+' LT   Event: '+(h.event||'Noon'));
+  L.push('='.repeat(40));
+
+  if(secs.engine && h.me){
+    L.push('');
+    L.push('ENGINE');
+    const me=h.me;
+    if(me.hrs) L.push('Running hours : '+me.hrs+' h');
+    if(me.dist) L.push('Distance      : '+me.dist+' NM');
+    // avg rpm & slip yeniden hesap (snapshot'ta ham veri var)
+    const prev=num(me.prev), now=num(me.now), hrs=num(me.hrs), dist=num(me.dist);
+    if(!isNaN(prev)&&!isNaN(now)&&!isNaN(hrs)&&hrs>0){
+      const avg=(now-prev)/(hrs*60);
+      L.push('Average RPM   : '+fmt(avg,1));
+      const pitch=num(S.vessel.pitch);
+      if(!isNaN(pitch)){
+        const eng=avg*pitch*(hrs*60)/1852;
+        L.push('Engine dist   : '+fmt(eng,1)+' NM');
+        if(!isNaN(dist)){
+          const slip=(eng-dist)/eng*100;
+          L.push('Slip          : '+fmt(slip,1)+' %');
+        }
+      }
+      if(!isNaN(dist)) L.push('Speed         : '+fmt(dist/hrs,2)+' kn');
+    }
+    if(!isNaN(me.kw)) L.push('Engine power  : '+fmt(me.kw,0)+' kW  ('+fmt(me.kw*1.35962,0)+' bhp)');
+  }
+
+  if(secs.bunker && h.fuelCons){
+    L.push('');
+    L.push('BUNKER CONSUMPTION');
+    if(h.units){
+      h.units.forEach(u=>{ if(u.mt!=null){ let line='  '+pad(u.name,14)+fmt(u.mt,3)+' MT'; if(u.op) line+='  ['+u.op+']'; L.push(line); } });
+    }
+    L.push('  '+'-'.repeat(28));
+    L.push('  Consumed this period (by fuel type):');
+    let totFO=0;
+    Object.entries(h.fuelCons).forEach(([k,v])=>{ totFO+=(v||0); L.push('    '+pad(k,16)+fmt(v,3)+' MT'); });
+    L.push('    '+pad('TOTAL',16)+fmt(totFO,3)+' MT');
+    if(h.fuelRob){
+      L.push('');
+      L.push('  ROB — remaining on board:');
+      Object.entries(h.fuelRob).forEach(([k,v])=>{
+        if(v==null) return;
+        let line='    '+pad(k,16)+fmt(v,3)+' MT';
+        if(v<0) line+='  ⚠ negative — check prev ROB / received entries';
+        L.push(line);
+      });
+    }
+  }
+
+  if(secs.oil && h.oilRob){
+    L.push('');
+    L.push('LUB OIL (ROB)');
+    Object.entries(h.oilRob).forEach(([k,v])=>{ if(v!=null) L.push('  '+pad(k,16)+fmt(v,0)+' L'); });
+  }
+
+  if(secs.water && h.water){
+    L.push('');
+    L.push('FRESH WATER');
+    if(h.water.produced!=null) L.push('  Produced      : '+fmt(h.water.produced,1)+' MT');
+    if(h.water.tanks!=null) L.push('  In tanks      : '+fmt(h.water.tanks,1)+' MT');
+  }
+
+  return L.join('\n');
+}
+
+// seçilen kapsama göre event listesi (yeniden eskiye)
+function getScopedEvents(){
+  if(!S.history || !S.history.length) return [];
+  const scope=$('rep-scope').value;
+  if(scope==='last'){ return S.history[0]?[S.history[0]]:[]; }
+  if(scope==='event'){
+    const idx=parseInt($('rep-pick').value,10)||0;
+    return S.history[idx]?[S.history[idx]]:[];
+  }
+  if(scope==='day'){
+    const first=S.history[0]; const day=first?first.date:'';
+    return S.history.filter(h=>h.date===day);
+  }
+  if(scope==='range'){
+    const f=$('rep-from').value, t=$('rep-to').value;
+    return S.history.filter(h=>{
+      if(!h.date) return false;
+      if(f && h.date<f) return false;
+      if(t && h.date>t) return false;
+      return true;
+    });
+  }
+  return S.history.slice(); // all
+}
+function scopeLabel(){
+  const scope=$('rep-scope').value;
+  if(scope==='event'||scope==='last'){ const h=getScopedEvents()[0]; return h?(h.date+' '+(h.time||'')+' '+(h.event||'')):''; }
+  if(scope==='day'){ const h=S.history[0]; return h?('Day '+h.date):''; }
+  if(scope==='range'){ return ($('rep-from').value||'…')+' → '+($('rep-to').value||'…'); }
+  return 'All saved events';
+}
+
+function buildReport(){
+  const pre=$('rep-preview'); if(!pre) return;
+  const secs=repSections();
+  if(!S.history || !S.history.length){ pre.textContent='No saved events. Tap “Save event to log” first.'; return; }
+  const evs=getScopedEvents();
+  if(!evs.length){ pre.textContent='No events in the selected scope.'; return; }
+  let out=[];
+  evs.slice().reverse().forEach((h,i)=>{ if(i>0) out.push('\n'+'#'.repeat(40)+'\n'); out.push(reportForEvent(h,secs)); });
+  pre.textContent = out.join('\n');
+}
+
+$('rep-scope').onchange=()=>{ toggleRepPick(); buildReport(); };
+$('rep-from').onchange=buildReport;
+$('rep-to').onchange=buildReport;
+$('rep-pick').onchange=buildReport;
+document.querySelectorAll('#rep-sections input[data-sec]').forEach(cb=>{
+  cb.onchange=()=>{ cb.closest('.sec-chip').classList.toggle('on',cb.checked); buildReport(); };
+});
+$('rep-copy').onclick=async()=>{
+  const txt=$('rep-preview').textContent;
+  try{ await navigator.clipboard.writeText(txt); flashMsg('Copied to clipboard'); }
+  catch(e){ // fallback
+    const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); flashMsg('Copied'); }catch(e2){ alert('Copy failed'); }
+    document.body.removeChild(ta);
+  }
+};
+$('rep-share').onclick=async()=>{
+  const txt=$('rep-preview').textContent;
+  if(navigator.share){ try{ await navigator.share({text:txt}); }catch(e){} }
+  else { try{ await navigator.clipboard.writeText(txt); flashMsg('Copied (share not supported)'); }catch(e){ alert('Share not supported'); } }
+};
+function flashMsg(m){ const f=$('flash'); if(!f)return; f.textContent=m; f.classList.add('show'); setTimeout(()=>{f.classList.remove('show');f.textContent='Saved';},1400); }
+
+// ══════════ PROFESSIONAL EXPORTS (Excel + PDF) ══════════
+function vHead(){
+  const n=(S.vessel&&S.vessel.name)||'Vessel';
+  const ex=[]; if(S.vessel&&S.vessel.imo) ex.push('IMO '+S.vessel.imo);
+  if(S.vessel&&S.vessel.callsign) ex.push('Call sign '+String(S.vessel.callsign).toUpperCase());
+  return {name:n, sub:ex.join(' · ')};
+}
+// kapsamdaki eventlerden tablo verisi: dinamik yakıt/ yağ kolonları
+function exportTable(){
+  const evs=getScopedEvents().slice().reverse(); // eskiden yeniye
+  const fuelKeys=[], oilKeys=[];
+  evs.forEach(h=>{
+    Object.keys(h.fuelCons||{}).forEach(k=>{ if(!fuelKeys.includes(k)) fuelKeys.push(k); });
+    Object.keys(h.oilRob||{}).forEach(k=>{ if(!oilKeys.includes(k)) oilKeys.push(k); });
+  });
+  const head=['Date','Time','Event','M/E hrs','Distance (NM)','Avg RPM','Speed (kn)','Slip (%)','Avg power (kW)',
+    ...fuelKeys.map(k=>k+' cons (MT)'),'Total FO (MT)',
+    ...fuelKeys.map(k=>k+' ROB (MT)'),
+    ...oilKeys.map(k=>k+' ROB (L)'),
+    'FW produced (t)','FW in tanks (t)'];
+  const rows=evs.map(h=>{
+    const tot=Object.values(h.fuelCons||{}).reduce((s,v)=>s+(v||0),0);
+    // avg rpm / speed / slip (snapshot ham verisinden)
+    let _rpm='',_spd='',_slip='';
+    {const p=num(h.me&&h.me.prev),n=num(h.me&&h.me.now),hh=num(h.me&&h.me.hrs),dd=num(h.me&&h.me.dist);
+     if(!isNaN(p)&&!isNaN(n)&&!isNaN(hh)&&hh>0){
+       const avg=(n-p)/(hh*60); _rpm=Math.round(avg*10)/10;
+       if(!isNaN(dd)){ _spd=Math.round(dd/hh*100)/100; }
+       const pit=num(S.vessel&&S.vessel.pitch);
+       if(!isNaN(pit)&&!isNaN(dd)){ const eng=avg*pit*(hh*60)/1852; if(eng>0) _slip=Math.round((eng-dd)/eng*1000)/10; }
+     }}
+    return [h.date||'',h.time||'',h.event||'',
+      (h.me&&h.me.hrs)||'',(h.me&&h.me.dist)||'',
+      _rpm,_spd,_slip,
+      (h.me&&h.me.kw!=null&&!isNaN(h.me.kw))?Math.round(h.me.kw):'',
+      ...fuelKeys.map(k=>(h.fuelCons&&h.fuelCons[k]!=null)?h.fuelCons[k]:''),
+      Math.round(tot*1000)/1000,
+      ...fuelKeys.map(k=>(h.fuelRob&&h.fuelRob[k]!=null)?h.fuelRob[k]:''),
+      ...oilKeys.map(k=>(h.oilRob&&h.oilRob[k]!=null)?h.oilRob[k]:''),
+      (h.water&&h.water.produced!=null)?h.water.produced:'',
+      (h.water&&h.water.tanks!=null)?h.water.tanks:''];
+  });
+  return {head,rows};
+}
+function dlBlob(content,mime,fname){
+  const b=new Blob([content],{type:mime});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=fname;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);
+}
+function safeName(s){ return String(s||'vessel').replace(/[^a-z0-9]+/gi,'_'); }
+
+// ── EXCEL (.xls — stilli HTML tablo, Excel doğrudan açar, offline çalışır)
+$('rep-xls').onclick=()=>{
+  const evs=getScopedEvents();
+  if(!evs.length){ alert('No events in the selected scope.'); return; }
+  const v=vHead(); const {head,rows}=exportTable();
+  let t='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>'+
+    'table{border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt}'+
+    'td,th{border:0.5pt solid #9aa4b2;padding:4pt 7pt;mso-number-format:"\\@"}'+
+    '.tt{font-size:15pt;font-weight:bold;color:#0a2540;border:none}'+
+    '.st{font-size:10pt;color:#5a6b7f;border:none}'+
+    'th{background:#0a2540;color:#ffffff;font-weight:bold;white-space:nowrap}'+
+    'tr.alt td{background:#f2f6fa}'+
+    '</style></head><body><table>'+
+    '<tr><td class="tt" colspan="'+head.length+'">'+v.name+' — Noon Report Log</td></tr>'+
+    '<tr><td class="st" colspan="'+head.length+'">'+(v.sub||'')+'  ·  Scope: '+scopeLabel()+'  ·  Generated: '+new Date().toLocaleString()+'  ·  Noon Report Pro</td></tr>'+
+    '<tr><td class="st" colspan="'+head.length+'"></td></tr>'+
+    '<tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+
+    rows.map((r,i)=>'<tr'+(i%2?' class="alt"':'')+'>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+
+    '</table></body></html>';
+  dlBlob('\ufeff'+t,'application/vnd.ms-excel','NoonReport_'+safeName(v.name)+'_'+new Date().toISOString().slice(0,10)+'.xls');
+  flashMsg('Excel downloaded');
+};
+
+// ── PDF (profesyonel baskı görünümü → tarayıcının "Save as PDF"i)
+$('rep-pdf').onclick=()=>{
+  const evs=getScopedEvents();
+  if(!evs.length){ alert('No events in the selected scope.'); return; }
+  const v=vHead(); const {head,rows}=exportTable();
+  const secs=repSections();
+  const detail=evs.slice().reverse().map(h=>'<pre class="ev">'+reportForEvent(h,secs).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre>').join('');
+  const doc='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Noon Report — '+v.name+'</title><style>'+
+    '@page{margin:14mm}body{font-family:Georgia,serif;color:#16202b;margin:0;padding:12px}'+
+    '.head{border-bottom:3px solid #0a2540;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px}'+
+    '.vn{font-size:24px;font-weight:bold;color:#0a2540;letter-spacing:.3px}'+
+    '.vs{font-size:11px;color:#5a6b7f;margin-top:3px}'+
+    '.doc{font-size:12px;color:#8a6a1e;font-weight:bold;text-align:right}'+
+    '.meta{font-size:11px;color:#5a6b7f;margin-bottom:14px}'+
+    '.pbtn{display:inline-block;background:#0a2540;color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-family:Arial,sans-serif;cursor:pointer;margin-bottom:14px}'+
+    '@media print{.pbtn{display:none}}'+
+    'table{border-collapse:collapse;width:100%;font-size:9.5px;font-family:Arial,sans-serif;margin-bottom:18px}'+
+    'th{background:#0a2540;color:#fff;padding:5px 6px;text-align:left;white-space:nowrap}'+
+    'td{border:1px solid #c8d2dc;padding:4px 6px}'+
+    'tr:nth-child(even) td{background:#f2f6fa}'+
+    'h2{font-size:13px;color:#0a2540;border-bottom:1px solid #c8d2dc;padding-bottom:4px;margin:16px 0 8px}'+
+    '.ev{font-family:monospace;font-size:9.5px;line-height:1.45;background:#f8fafc;border:1px solid #dfe6ee;'+
+    'border-radius:4px;padding:10px;white-space:pre-wrap;page-break-inside:avoid;margin:0 0 10px}'+
+    '.foot{font-size:9px;color:#9aa4b2;border-top:1px solid #dfe6ee;padding-top:6px;margin-top:8px;text-align:center}'+
+    '</style></head><body>'+
+    '<button class="pbtn" onclick="window.print()">🖨 Print / Save as PDF</button>'+
+    '<div class="head"><div><div class="vn">'+v.name+'</div><div class="vs">'+(v.sub||'')+'</div></div>'+
+    '<div class="doc">NOON REPORT<br><span style="font-weight:normal;color:#5a6b7f">'+scopeLabel()+'</span></div></div>'+
+    '<div class="meta">Generated '+new Date().toLocaleString()+' · '+evs.length+' event(s) · Noon Report Pro</div>'+
+    '<h2>Summary log</h2><table><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr>'+
+    rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table>'+
+    '<h2>Event details</h2>'+detail+
+    '<div class="foot">'+v.name+(v.sub?' · '+v.sub:'')+' — generated by Noon Report Pro</div>'+
+    '</body></html>';
+  const blob=new Blob([doc],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const w=window.open(url,'_blank');
+  if(!w){
+    // popup engellendi → HTML dosyası olarak indir (açıp Print → Save as PDF)
+    dlBlob(doc,'text/html','NoonReport_'+safeName(v.name)+'_'+new Date().toISOString().slice(0,10)+'.html');
+    flashMsg('Popup blocked — report downloaded, open it & print');
+  }
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+};
+
+
+
+
+
+$('btn-hardreset').onclick=()=>{
+  if(!confirm('Reset ALL data? This clears vessel particulars, fuel, oil and all history. Cannot be undone.')) return;
+  if(!confirm('Are you sure? Everything will be erased.')) return;
+  try{ localStorage.removeItem('noonreport_v1'); }catch(e){}
+  location.reload();
+};
+
+// SAVE EVENT TO LOG: mevcut event'i snapshot olarak log'a ekle, sonra carry-forward
+$('btn-savelog').onclick=()=>{
+  // en az tarih+event olsun
+  if(!S.today['r_date']){ alert('Please set the date first.'); return; }
+  // ayni tarih+saat+event zaten en ustte kayitliysa: muhtemelen yanlislikla ikinci kez basiliyor
+  const last=S.history && S.history[0];
+  if(last && last.date===S.today['r_date'] && last.time===S.today['r_time'] && last.event===(S.today['r_event']||'Noon')){
+    if(!confirm('An event with this exact date/time/event is already saved.\n\nTip: fill ALL tabs (Engine, Bunker, Lub Oil, Water) first, then save ONCE — one save records every tab together.\n\nSave again as a NEW event anyway?')) return;
+  }
+  // snapshot olustur (tum veriler + hesaplanan degerler)
+  const snap = buildEventSnapshot();
+  S.history.unshift(snap);
+  if(S.history.length>200) S.history.pop();
+
+  // CARRY-FORWARD (present -> previous), aynen eski New day mantigi
+  // ME sayac
+  if(S.today['me_now']!=null && S.today['me_now']!==''){ S.today['me_prev']=S.today['me_now']; S.today['me_now']=''; }
+  S.today['me_dist']=''; // yeni event icin mesafe sifirla
+  // FUEL ROB -> prev ROB, received sifirla
+  (S.fuelTypes||[]).forEach(ft=>{ const r=currentRob(ft); if(!isNaN(r)) ft.prevRob=String(round3(r)); ft.received=''; });
+  // FLOWMETER current -> previous (ME+extra + AUX)
+  (S.consumers||[]).forEach(c=>{ if(c.mode==='flow'){ if(c.nowL) c.prevL=c.nowL; c.nowL=''; } else { c.mt=''; } });
+  Object.values(S.auxConsumers||{}).forEach(c=>{ if(c.mode==='flow'){ if(c.nowL) c.prevL=c.nowL; c.nowL=''; } else { c.mt=''; } });
+  // OIL ROB -> prev, flowmeter current->previous
+  (S.oilTypes||[]).forEach(ot=>{
+    let cL=0, any=false;
+    (S.oilConsumers||[]).forEach(c=>{ if(c.otId===ot.id){ const l=oilConsumerLitres(c); if(!isNaN(l)){ cL+=l; any=true; } } });
+    const prev=num(ot.prevRob), recv=num(ot.received);
+    if(!(isNaN(prev)&&!any)) ot.prevRob=String(round3((isNaN(prev)?0:prev)+(isNaN(recv)?0:recv)-cL));
+    ot.received='';
+  });
+  (S.oilConsumers||[]).forEach(c=>{ if(c.mode==='flow'){ if(c.nowL) c.prevL=c.nowL; c.nowL=''; } else { c.kg=''; } });
+  // FWG carry-forward
+  (S.fwg||[]).forEach(g=>{ if(g.mode==='flow'){ if(g.nowL) g.prevL=g.nowL; g.nowL=''; } else { g.mt=''; } });
+
+  // saati simdiki zamana guncelle (yeni event icin)
+  const d=new Date(); S.today['r_time']=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+
+  // alanlari yeniden yukle
+  ['r-date','r-time','r-event','me-prev','me-now','me-hrs','me-dist'].forEach(id=>{
+    const key=id.replace('-','_'); const el=$(id); if(el) el.value=S.today[key]!=null?S.today[key]:'';
+  });
+  computeME(); renderFuelTypes(); renderAuxPicker(); renderConsumers(); renderOilTypes(); renderOilConsumers();
+  if(typeof renderFWG==='function'){ renderFWG(); renderFWTanks(); }
+  if(typeof renderLog==='function') renderLog();
+  save();
+  // kullaniciya geri bildirim
+  const f=$('flash'); f.textContent='Event saved to log'; f.classList.add('show'); setTimeout(()=>{f.classList.remove('show');f.textContent='Saved';},1400);
+};
+
+// event snapshot: log'da gosterilecek tum bilgiler
+function buildEventSnapshot(){
+  const fuelRob={}, oilRob={};
+  (S.fuelTypes||[]).forEach(ft=>{ const r=currentRob(ft); fuelRob[ft.name]=isNaN(r)?null:round3(r); });
+  (S.oilTypes||[]).forEach(ot=>{
+    let cL=0,any=false;
+    (S.oilConsumers||[]).forEach(c=>{ if(c.otId===ot.id){ const l=oilConsumerLitres(c); if(!isNaN(l)){cL+=l;any=true;} } });
+    const prev=num(ot.prevRob),recv=num(ot.received);
+    oilRob[ot.name]= (isNaN(prev)&&!any)?null:round3((isNaN(prev)?0:prev)+(isNaN(recv)?0:recv)-cL);
+  });
+  // consumption per fuel type
+  const fuelCons={};
+  (S.fuelTypes||[]).forEach(ft=>{ let c=0; allConsumers().forEach(cc=>{ if(cc.ftId===ft.id){ const m=consumerMT(cc); if(!isNaN(m))c+=m; } }); fuelCons[ft.name]=round3(c); });
+  // per-unit detay (isim, mod, opMode, MT, run/h)
+  const units=[];
+  const meC=S.consumers.filter(c=>c._me), otherC=S.consumers.filter(c=>!c._me);
+  const auxC=[...S.auxRunning].sort((a,b)=>a-b).map(n=>({n,c:S.auxConsumers[n]})).filter(x=>x.c);
+  meC.forEach(c=>units.push({name:c.name||'M/E', mt:round3safe(consumerMT(c)), runh:S.today['me_hrs']||'', op:''}));
+  auxC.forEach(x=>units.push({name:'A/E '+x.n, mt:round3safe(consumerMT(x.c)), runh:x.c.runh||'', op:x.c.opMode||''}));
+  otherC.forEach(c=>units.push({name:c.name||'Unit', mt:round3safe(consumerMT(c)), runh:c.runh||'', op:''}));
+
+  // FRESH WATER snapshot
+  let fwProd=0, fwProdAny=false, fwTank=0, fwTankAny=false;
+  (S.fwg||[]).forEach(g=>{ const p=fwgProduced(g); if(!isNaN(p)){ fwProd+=p; fwProdAny=true; } });
+  (S.fwTanks||[]).forEach(t=>{ const l=num(t.level); if(!isNaN(l)){ fwTank+=l; fwTankAny=true; } });
+  const water={ produced: fwProdAny?round3(fwProd):null, tanks: fwTankAny?round3(fwTank):null };
+
+  // ME performans (computeME'nin sakladiklari)
+  return {
+    date:S.today['r_date']||'', time:S.today['r_time']||'', event:S.today['r_event']||'Noon',
+    savedAt:Date.now(),
+    me:{ prev:S.today['me_prev']||'', now:S.today['me_now']||'', hrs:S.today['me_hrs']||'',
+         dist:S.today['me_dist']||'', kw:S.today._kw, kwh:S.today._kwh },
+    fuelRob, fuelCons, oilRob, units, water
+  };
+}
+function round3safe(n){ return isNaN(n)?null:round3(n); }
+
+
+// yardimcilar
+function round3(n){ return Math.round(n*1000)/1000; }
+function currentRob(ft){
+  let consumed=0, any=false;
+  allConsumers().forEach(c=>{ if(c.ftId===ft.id){ const m=consumerMT(c); if(!isNaN(m)){ consumed+=m; any=true; } } });
+  const prev=num(ft.prevRob), recv=num(ft.received);
+  if(isNaN(prev)&&!any) return NaN;
+  return (isNaN(prev)?0:prev)+(isNaN(recv)?0:recv)-consumed;
+}
+function snapshotFuel(){
+  return { fuelTypes: JSON.parse(JSON.stringify(S.fuelTypes||[])),
+           consumers: JSON.parse(JSON.stringify(S.consumers||[])) };
+}
+
+refreshVesselName();
+computeME();
+renderFuelTypes();
+renderAuxPicker();
+renderConsumers();
+renderOilTypes();
+renderOilConsumers();
+renderFWG();
+renderFWTanks();
+if(typeof toggleRepPick==='function'){ toggleRepPick(); renderLog(); buildReport(); }
+</script>
+</body>
+</html>
