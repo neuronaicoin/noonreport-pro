@@ -200,7 +200,7 @@
     <div class="htop">
       <div class="brand">
         <div class="dot">N</div>
-        <h1>NOON<span>REPORT</span></h1>
+        <h1>NOON<span>REPORT</span> <b style="color:var(--gold);font-weight:800">PRO</b></h1>
       </div>
       <div class="vname" id="vname">No vessel set</div>
     </div>
@@ -1315,7 +1315,7 @@ $('rep-pdf').onclick=()=>{
   const v=vHead(); const {head,rows}=exportTable();
   const secs=repSections();
   const detail=evs.slice().reverse().map(h=>'<pre class="ev">'+reportForEvent(h,secs).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre>').join('');
-  const doc='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Noon Report — '+v.name+'</title><style>'+
+  const doc='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Noon Report Pro — '+v.name+'</title><style>'+
     '@page{margin:14mm}body{font-family:Georgia,serif;color:#16202b;margin:0;padding:12px}'+
     '.head{border-bottom:3px solid #0a2540;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px}'+
     '.vn{font-size:24px;font-weight:bold;color:#0a2540;letter-spacing:.3px}'+
