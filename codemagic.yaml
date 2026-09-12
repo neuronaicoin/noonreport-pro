@@ -6,12 +6,35 @@ workflows:
     environment:
       flutter: stable
       java: 17
+      android_signing:
+        - neuron_release
     scripts:
       - name: Scaffold Flutter project
         script: |
           flutter create --org com.neuronai --project-name noon_report_pro --platforms=android .
           cp app_main.dart lib/main.dart
           sed -i '' 's/android:label="noon_report_pro"/android:label="Noon Report Pro"/' android/app/src/main/AndroidManifest.xml
+      - name: Configure release signing
+        script: |
+          # Codemagic, "android_signing" ile yuklenen keystore'u otomatik olarak
+          # CM_KEYSTORE_PATH / CM_KEYSTORE_PASSWORD / CM_KEY_ALIAS / CM_KEY_PASSWORD
+          # ortam degiskenlerine enjekte eder. Flutter'in varsayilan sablonu
+          # release build'i debug anahtariyla imzalar (TODO yorumuyla) --
+          # bunu gercek release imzasini kullanacak sekilde degistiriyoruz.
+          python3 -c "
+          import os
+          gradle_file = 'android/app/build.gradle'
+          if not os.path.exists(gradle_file):
+              gradle_file = 'android/app/build.gradle.kts'
+          with open(gradle_file, 'r') as f:
+              content = f.read()
+          signing_block = '\n    signingConfigs {\n        release {\n            keyAlias System.getenv(\"CM_KEY_ALIAS\")\n            keyPassword System.getenv(\"CM_KEY_PASSWORD\")\n            storeFile System.getenv(\"CM_KEYSTORE_PATH\") ? file(System.getenv(\"CM_KEYSTORE_PATH\")) : null\n            storePassword System.getenv(\"CM_KEYSTORE_PASSWORD\")\n        }\n    }\n'
+          content = content.replace('android {', 'android {' + signing_block, 1)
+          content = content.replace('signingConfig signingConfigs.debug', 'signingConfig signingConfigs.release')
+          with open(gradle_file, 'w') as f:
+              f.write(content)
+          print('Imzalama ayari eklendi: ' + gradle_file)
+          "
       - name: Add WebView package and HTML asset
         script: |
           flutter pub add webview_flutter
