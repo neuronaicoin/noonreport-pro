@@ -21,19 +21,28 @@ workflows:
           # ortam degiskenlerine enjekte eder. Flutter'in varsayilan sablonu
           # release build'i debug anahtariyla imzalar (TODO yorumuyla) --
           # bunu gercek release imzasini kullanacak sekilde degistiriyoruz.
+          # Hem Groovy (build.gradle) hem Kotlin DSL (build.gradle.kts) destekleniyor.
           python3 -c "
           import os
           gradle_file = 'android/app/build.gradle'
           if not os.path.exists(gradle_file):
               gradle_file = 'android/app/build.gradle.kts'
+          is_kts = gradle_file.endswith('.kts')
           with open(gradle_file, 'r') as f:
               content = f.read()
-          signing_block = '\n    signingConfigs {\n        release {\n            keyAlias System.getenv(\"CM_KEY_ALIAS\")\n            keyPassword System.getenv(\"CM_KEY_PASSWORD\")\n            storeFile System.getenv(\"CM_KEYSTORE_PATH\") ? file(System.getenv(\"CM_KEYSTORE_PATH\")) : null\n            storePassword System.getenv(\"CM_KEYSTORE_PASSWORD\")\n        }\n    }\n'
+          if is_kts:
+              signing_block = '\n    signingConfigs {\n        create(\"release\") {\n            keyAlias = System.getenv(\"CM_KEY_ALIAS\")\n            keyPassword = System.getenv(\"CM_KEY_PASSWORD\")\n            storeFile = System.getenv(\"CM_KEYSTORE_PATH\")?.let { file(it) }\n            storePassword = System.getenv(\"CM_KEYSTORE_PASSWORD\")\n        }\n    }\n'
+              old_signing = 'signingConfig = signingConfigs.getByName(\"debug\")'
+              new_signing = 'signingConfig = signingConfigs.getByName(\"release\")'
+          else:
+              signing_block = '\n    signingConfigs {\n        release {\n            keyAlias System.getenv(\"CM_KEY_ALIAS\")\n            keyPassword System.getenv(\"CM_KEY_PASSWORD\")\n            storeFile System.getenv(\"CM_KEYSTORE_PATH\") ? file(System.getenv(\"CM_KEYSTORE_PATH\")) : null\n            storePassword System.getenv(\"CM_KEYSTORE_PASSWORD\")\n        }\n    }\n'
+              old_signing = 'signingConfig signingConfigs.debug'
+              new_signing = 'signingConfig signingConfigs.release'
           content = content.replace('android {', 'android {' + signing_block, 1)
-          content = content.replace('signingConfig signingConfigs.debug', 'signingConfig signingConfigs.release')
+          content = content.replace(old_signing, new_signing)
           with open(gradle_file, 'w') as f:
               f.write(content)
-          print('Imzalama ayari eklendi: ' + gradle_file)
+          print('Imzalama ayari eklendi (kts=' + str(is_kts) + '): ' + gradle_file)
           "
       - name: Add WebView package and HTML asset
         script: |
